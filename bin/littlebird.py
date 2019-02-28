@@ -16,10 +16,9 @@ def main():
     # Start with the splash screen because why not!
     splash()
 
-    # Get arguments from sysarg, apply them as necessary
-    # Should I move the sys.args to initialize, or is that too many layers in?
+    # Start the initialization process
+    initialize()
 
-    lbinit.initialize()
     return
 
 
@@ -36,7 +35,7 @@ def initialize():
         try:
             lbinit.firstrun(os.path.dirname(os.path.abspath(__file__)))
         except Exception as err:
-            logging.warn(f'Rebuild Error: {err}')
+            logging.warning(f'Rebuild Error: {err}')
             lbinit.cleanexit(err.args)
 
     return

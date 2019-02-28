@@ -33,26 +33,31 @@ def firstrun(abspath):
 
 def configload(abspath: str):
     # Use configparse to load config data into a dict
-    print(f'Checking config file at {abspath}/conf/littlebird.ini')
+    logging.info(f'Checking config file at {abspath}/conf/littlebird.ini')
 
     config = configparser.ConfigParser()
     config.read(abspath + '/conf/littlebird.ini')
+    logging.debug(f'Read and loaded config from {abspath}/conf/littlebird.ini')
+
     return dict(config._sections)
 
 
-def logwrapper(level):
-
-    try:
-        if not level:
-            logging.basicConfig(level=logging.WARN)
-            logging.info('Logging information ')
-    except Exception as err:
-        raise err
-
+def logwrapper(init=''):
+    # TODO: Differentiate between initial verbosity and configfile handler creation -- check for dict vs int
+    # Check for initial verbosity
+    initlevels = {0:"logging.WARN",1:"logging.INFO",2:"logging.DEBUG"}
+    if not init:
+        logging.basicConfig(level=logging.WARN, format='%(asctime)s %(levelname)s %(message)%',
+                            datefmt="%Y-%m-%d %H:%M:%S")
+        logging.info(f'Initial logging level set to '
+                     f'{logging.getLevelName(logging.getLogger().getEffectiveLevel())}')
+    elif type(init) == int:
+        pass
     return
 
 
 def cleanexit(level):
     # Attempt to exit program cleanly by closing connections
 
+    logging.shutdown()
     sys.exit(level)
