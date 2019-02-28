@@ -42,17 +42,55 @@ def configload(abspath: str):
     return dict(config._sections)
 
 
-def logwrapper(init=''):
-    # TODO: Differentiate between initial verbosity and configfile handler creation -- check for dict vs int
+def logwrapper(init=False, configdata: dict = False):
+
     # Check for initial verbosity
-    initlevels = {0:"logging.WARN",1:"logging.INFO",2:"logging.DEBUG"}
-    if not init:
-        logging.basicConfig(level=logging.WARN, format='%(asctime)s %(levelname)s %(message)%',
-                            datefmt="%Y-%m-%d %H:%M:%S")
-        logging.info(f'Initial logging level set to '
-                     f'{logging.getLevelName(logging.getLogger().getEffectiveLevel())}')
-    elif type(init) == int:
-        pass
+    initlevels = {0: logging.WARN, 1: logging.INFO, 2: logging.DEBUG}
+
+    # TODO: Rebuild logwrapper to utilize configparser for logging.config.fileConfig(fname)
+    # Create initial logging procedure
+    logger = logging.getLogger('Littlebird')
+    logger.setLevel(initlevels[init])
+
+    # This /should/ proc only during the program boot sequence
+    if not configdata:
+        try:
+            verbosity = logging.StreamHandler(stream=sys.stdout)
+            verbosity.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)%',
+                                                     datefmt="%Y-%m-%d %H:%M:%S"))
+            logger.addHandler(verbosity)
+        except Exception as err:
+            logging.warning(f'Error setting verbosity handler with type: {err.args}: {err}')
+            cleanexit(err.args)
+        finally:
+            return
+
+    # This /should/ only proc when the wrapper is called during the initialization only if configdata isn't Enabled
+    elif not configdata['ENABLED']:
+        try:
+            verbosity = logging.StreamHandler(stream=sys.stdout)
+            verbosity.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)%',
+                                                     datefmt="%Y-%m-%d %H:%M:%S"))
+            logger.addHandler(verbosity)
+        except Exception as err:
+            logging.warning(f'Error setting verbosity handler with type: {err.args}: {err}')
+        finally:
+            return
+    else:
+        try:
+            # Remove previous handler which /should/ be active
+            logger.handlers.pop()
+
+            # Create new handler for the rest of the session
+            littlebird = logging.FileHandler(filename=configdata['LOCATION'] + "/" + configdata['FILENAME'],
+                                             encoding='utf-8', mode='w')
+            littlebird.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)%',
+                                                      datefmt="%Y-%m-%d %H:%M:%S"))
+            logger.addHandler(littlebird)
+
+        except Exception as err:
+            logging.warning(f'Error setting verbosity handler with type: {err.args}: {err}')
+
     return
 
 
