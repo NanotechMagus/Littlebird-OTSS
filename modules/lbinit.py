@@ -2,18 +2,16 @@
 import logging
 import configparser
 from pathlib import Path
+import sys
 
 # Locally Developed Imports
 
 # Third Party Imports
 
 
-def initialize(isnew=False):
-    # get absolute path for use throughout the initialization phase
-    absdir = str(Path().resolve().parent)
-    print(absdir)
+def initialize():
     # Check for built configfile.json.
-
+    isnew = False
     # If no configfile.json, get configparse information
 
     # Do something if isnew flag is flipped
@@ -26,12 +24,11 @@ def initialize(isnew=False):
     return
 
 
-def firstrun():
+def firstrun(abspath):
     # Build configfile in json
 
 
     return
-
 
 
 def configload(abspath: str):
@@ -43,3 +40,19 @@ def configload(abspath: str):
     return dict(config._sections)
 
 
+def logwrapper(level):
+
+    try:
+        if not level:
+            logging.basicConfig(level=logging.WARN)
+            logging.info('Logging information ')
+    except Exception as err:
+        raise err
+
+    return
+
+
+def cleanexit(level):
+    # Attempt to exit program cleanly by closing connections
+
+    sys.exit(level)
