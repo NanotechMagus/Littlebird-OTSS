@@ -1,0 +1,26 @@
+{
+  "Discord":
+    {
+      "TOKEN": "",
+      "PREFIX": "~",
+      "DESCRIPTION": "A Simple bot built for the Star Shadow Community!"
+    },
+  "Discord-Logging":
+      {
+        "ENABLED": "True",
+        "DEFAULTLEVEL": "WARN",
+        "LOCATION": "./logs/",
+        "FILENAME": "ldb.log"
+      },
+  "XIVAPI": {
+    "LANG": "NA",
+    "KEY": ""
+  },
+  "MongoDB": {
+    "HOST": "localhost",
+    "PORT": 27017,
+    "USERNAME": "",
+    "PASSWORD": "",
+    "DBNAME": "Littlebird"
+  }
+}
