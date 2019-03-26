@@ -12,15 +12,17 @@
         "LOCATION": "./logs/",
         "FILENAME": "ldb.log"
       },
-  "XIVAPI": {
-    "LANG": "NA",
-    "KEY": ""
-  },
-  "MongoDB": {
-    "HOST": "localhost",
-    "PORT": 27017,
-    "USERNAME": "",
-    "PASSWORD": "",
-    "DBNAME": "Littlebird"
+  "XIVAPI":
+    {
+      "LANG": "NA",
+      "KEY": ""
+    },
+  "MongoDB":
+  {
+      "HOST": "localhost",
+      "PORT": 27017,
+      "USERNAME": "",
+      "PASSWORD": "",
+      "DBNAME": "Littlebird"
   }
 }

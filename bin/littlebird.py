@@ -7,7 +7,8 @@ from discord.ext import commands
 import argparse
 
 # Locally Developed Imports
-from modules import lbinit
+from modules.lbinit import lbInit as base
+from modules.lbdb import mongoLB as db
 
 # Third Party Imports
 
@@ -17,26 +18,8 @@ def main():
     splash()
 
     # Start the initialization process
-    initialize()
-
-    return
-
-
-def initialize():
-    # Lets take some system args and process them
-    parser = argparse.ArgumentParser()
-    parser.add_argument("rb", "--rebuild", help="Rebuild the Bot using settings from littlebird.ini")
-    parser.add_argument("v", "--verbosity", action="count", help="Set initial verbosity")
-    args = parser.parse_args()
-
-    lbinit.logwrapper(args.verbosity)
-
-    if args.rebuild:
-        try:
-            lbinit.firstrun(os.path.dirname(os.path.abspath(__file__)))
-        except Exception as err:
-            logging.warning(f'Rebuild Error: {err}')
-            lbinit.cleanexit(err.args)
+    init = base()
+    lbdb = db(init.config["MongoDB"])
 
     return
 
