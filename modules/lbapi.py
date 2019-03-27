@@ -12,20 +12,20 @@ from urllib.parse import urljoin
 class DivTech:
 
     def __init__(self):
-        self.__api = "https://thedivisiontab.com/api/search.php"
+        self.__api = "https://thedivisiontab.com/api/"
 
     def search_by_name(self, platform, name):
 
         try:
 
-            if not validate_me("shd_platform", platform):
+            if not validate_me("shd_platform", platform.lower()):
                 raise ValueError(f'{platform} cannot be found in SHDTech API.')
             else:
-                parameter = {"name": name, "platform": platform}
+                parameter = {"name": name.lower(), "platform": platform.lower()}
 
-            data = requests.get(self.__api, params=parameter)
+            data = requests.get(urljoin(self.__api, "search.php"), params=parameter)
 
-            if not data.status_code == requests.status_codes.ok:
+            if not data.status_code == requests.codes.ok:
                 raise ValueError(f'{data.status_code} received. Cannot connect to SHDTech API')
 
             datac = json.loads(data.content)
@@ -51,15 +51,23 @@ class DivTech:
             else:
                 raise AttributeError(f'Invalid pid: {pid}')
 
-            data = requests.get(self.__api, params=parameter)
+            data = requests.get(urljoin(self.__api, "player.php"), params=parameter)
 
-            if not data.status_code == requests.status_codes.ok:
+            if not data.status_code == requests.codes.ok:
                 raise ValueError(f'{data.status_code} received. Cannot connect to SHDTech API')
 
-            return json.loads(data.content)
+            shd_data = json.loads(data.content)
+
+            if not shd_data['playerfound']:
+                raise KeyError(f'Player not found with pid: {pid}')
+            else:
+                return shd_data
 
         except AttributeError as err:
-            logging.warning(f'{err}')
+            logging.warning(err)
+            return None
+        except ValueError as err:
+            logging.warning(err)
             return None
 
 
@@ -67,25 +75,24 @@ class xivAPI:
 
     def __init__(self, key=None):
         self.__api = "https://xivapi.com/"
-        self.__apikey = key
-        self.contentdata = self.init_api()
+        self.__key = key
 
     def init_api(self, getinit="default"):
 
-        content = {"xivcontentlist": requests.get(urljoin(self.__api, "content"))}
-        server = {"xivserverlist": requests.get(urljoin(self.__api, "servers"))}
-        dc = {"xivdclist": requests.get(urljoin(self.__api, "servers/dc"))}
+        content = requests.get(urljoin(self.__api, "content"))
+        server = requests.get(urljoin(self.__api, "servers"))
+        dc = requests.get(urljoin(self.__api, "servers/dc"))
 
         initial_list = {
-            "contentlist": content.content,
-            "serverlist": server.content,
-            "datacenter": dc.content
+            "xivcontentlist": json.loads(content.content),
+            "xivserverlist": json.loads(server.content),
+            "xivdclist": json.loads(dc.content)
         }
 
         if getinit == "default":
-            return {json.loads(content.content), json.loads(server.content), json.loads(dc.content)}
+            return initial_list
         elif getinit in initial_list:
-            return json.loads(initial_list[getinit])
+            return initial_list[getinit]
         else:
             return None
 
@@ -96,12 +103,13 @@ class xivAPI:
             if not validate_me("csearch", stype):
                 raise NameError(f'{stype} is not a valid search type.')
             else:
-                params = {stype: validate_me("csearch", stype), "name": name, "server": server}
-
-            search = requests.get(self.__api, params=params)
+                params = {"name": name, "server": server}
+            logging.info(f'Attempting to contact server at '
+                         f'{urljoin(self.__api, validate_me("csearch", stype) + "/search")}')
+            search = requests.get(urljoin(self.__api, validate_me("csearch", stype) + "/search"), params=params)
 
             if not search.status_code == requests.codes.ok:
-                raise ValueError(f'There server is taking a break, status code: {search.status_code}')
+                raise ValueError(f'Their server is taking a break, status code: {search.status_code}')
 
             usearch = json.loads(search.content)
 
@@ -121,16 +129,13 @@ class xivAPI:
         except ValueError as err:
             logging.warning(err)
             return err
-        except AttributeError as err:
-            logging.warning(err)
-            return err
 
-    def get_full_info(self, stype, pid):
+    def get_full_char_info(self, stype, pid):
 
         try:
-
-            charinfo = requests.get(urljoin(self.__api, validate_me("csearch", stype), pid))
-            logging.info(f'Performed search at {charinfo.url}')
+            params = {"data": "FC,PVP"}
+            charinfo = requests.get(urljoin(self.__api, validate_me("csearch", stype) + "/" + str(pid)), params=params)
+            logging.warning(f'Performed search at {charinfo.url}')
 
             if not charinfo.status_code == requests.codes.ok:
                 raise ValueError(f'There server is taking a break, status code: {charinfo.status_code}')
@@ -147,6 +152,18 @@ class xivAPI:
         except AttributeError as err:
             logging.warning(f'{err}')
             return None
+
+    def get_content_info(self, ctype, id):
+
+        try:
+
+            print(f'Pulling information from {urljoin(self.__api, ctype + "/" + str(id))}.')
+            data = requests.get(urljoin(self.__api, ctype + "/" + str(id)))
+
+            return json.loads(data.content)
+
+        except ValueError as err:
+            logging.warning(err)
 
 
 def validate_me(vtype, vcontent):
