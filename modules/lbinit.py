@@ -13,11 +13,9 @@ class lbInit:
 
     def __init__(self):
         logging.basicConfig(format='%(levelname)s:%(message)s', level=logging.INFO)
-        self.isnew = False
         self.basedir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
         self.confpath = os.path.join(self.basedir, 'conf')
         self.config = self.configload()
-        # self.logwrapper()
 
     def configload(self):
         # Use configparse to load config data into a dict

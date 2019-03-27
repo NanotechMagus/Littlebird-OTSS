@@ -19,7 +19,17 @@ def main():
 
     # Start the initialization process
     init = base()
-    lbdb = db(init.config["MongoDB"])
+
+    littlebird = commands.Bot(command_prefix=init.config['Discord']['PREFIX'],
+                              description=init.config['Discord']['DESCRIPTION'])
+
+    for extension in gather_extensions(init.basedir):
+        try:
+            littlebird.load_extension(extension)
+        except Exception as err:
+            logging.warning(f'Failed to load extension {extension}.')
+
+    littlebird.run(token=init.config['Discord']['TOKEN'])
 
     return
 
@@ -30,6 +40,15 @@ def splash():
           'By using this program, you accept the LICENSE agreement located at the top level of the directory.\n\n'
           'Now that the crazy stuff is out of the way, let\'s begin!\n')
     return
+
+
+def gather_extensions(basedir):
+
+    cogsdir = os.path.join(basedir, "cogs")
+    reglist = [f for f in os.listdir(cogsdir) if os.path.isfile(os.path.join(cogsdir, f))]
+    splitlist = [os.path.splitext(x)[0] for x in reglist]
+
+    return ["cogs." + x for x in splitlist]
 
 
 if __name__ == "__main__":
